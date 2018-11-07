@@ -1,8 +1,18 @@
 import React, { Component } from 'react';
+import Web3 from 'web3';
 import logo from './logo.svg';
 import './App.css';
 
+// Contract
+import eventTester from './eventTester';
+
+const web3 = new Web3(window.web3.currentProvider);
+
 class App extends Component {
+  async componentDidMount() {
+    console.log(eventTester);
+  }
+
   render() {
     return (
       <div className="container">
