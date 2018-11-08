@@ -24,8 +24,6 @@ class App extends Component {
     console.log('acc', accounts);
     this.setState({ accounts });
 
-    const currentBlockNumber = await web3.eth.getBlockNumber();
-    console.log('cbn', currentBlockNumber)
     // Set up watch for Counter;
     // eventTester.events.Counter({}, {fromBlock: `0`, toBlock: "latest"}, async (error, result) => {
     //   if(!error) {
@@ -45,7 +43,9 @@ class App extends Component {
     //     console.log('err', error)
     //   }
     // })
-    
+
+    const currentBlockNumber = await web3.eth.getBlockNumber();
+
     eventTester.events.allEvents({fromBlock: `0`, toBlock: "latest"}, async (error, result) => {
       if(!error) {
         console.log('result', result);
