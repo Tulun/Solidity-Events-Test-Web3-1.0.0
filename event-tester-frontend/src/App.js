@@ -12,39 +12,69 @@ console.log('web3', web3);
 class App extends Component {
   state = {
     count: 0,
-    accounts: []
+    accounts: [],
+    addresses: []
   }
   async componentDidMount() {
     console.log(eventTester);
     const count = await eventTester.methods.count().call();
     this.setState({ count });
-    console.log(web3.eth);
 
     const accounts = await web3.eth.getAccounts();
     console.log('acc', accounts);
-    this.setState({ accounts })
-    // const events = eventTester.events.allEvents({fromBlock: 0, toBlock: "latest"}, (err, logs) => {
-    //   if (err) {
-    //     console.log('err', err);
+    this.setState({ accounts });
+
+    const currentBlockNumber = await web3.eth.getBlockNumber();
+    console.log('cbn', currentBlockNumber)
+    // Set up watch for Counter;
+    // eventTester.events.Counter({}, {fromBlock: `0`, toBlock: "latest"}, async (error, result) => {
+    //   if(!error) {
+    //     console.log('result', result)
+    //     const count = await eventTester.methods.count().call();
+    //     this.setState({ count });
+    //   } else {
+    //     console.log('err', error)
     //   }
-    //   console.log('logs', logs);
     // });
-    eventTester.events.Counter({}, {fromBlock: "0", toBlock: "latest"}, async (error, result) => {
+
+    // eventTester.events.AddressEvent({}, {fromBlock: `${currentBlockNumber}`, toBlock: "latest"}, async (error, result) => {
+    //   if(!error) {
+    //     console.log('result', result)
+    //     this.setState({ addresses: [...this.state.addresses, result.returnValues[0]] });
+    //   } else {
+    //     console.log('err', error)
+    //   }
+    // })
+    
+    eventTester.events.allEvents({fromBlock: `0`, toBlock: "latest"}, async (error, result) => {
       if(!error) {
-        console.log('result', result)
-        const count = await eventTester.methods.count().call();
-        this.setState({ count });
+        console.log('result', result);
+        if (result.event === "AddressEvent" && result.blockNumber >= currentBlockNumber) {
+          this.setState({ addresses: [...this.state.addresses, result.returnValues[0]] });
+        };
+
+        if (result.event === "Counter") {
+          const count = await eventTester.methods.count().call();
+          this.setState({ count });
+        }
       } else {
         console.log('err', error)
       }
-    });
+    })
   }
 
   increment = () => {
-    eventTester.methods.increment().send({
+    eventTester.methods.trigger().send({
       from: this.state.accounts[0],
       gas: '300000'
     });
+  }
+
+  emitAddress = () => {
+    eventTester.methods.trigger().send({
+      from: this.state.accounts[0],
+      gas: "300000"
+    })
   }
 
   render() {
@@ -52,7 +82,21 @@ class App extends Component {
       <div className="container">
         <div className="row">
           <div className="col-xs-12 col-sm-12 col-md-12 text-center">
-            <button className="btn btn-primary">Call Address Emitter</button>
+            <h2>Testing Events</h2>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-xs-12 col-sm-12 col-md-12 text-center">
+            <button onClick={() => this.emitAddress()} className="btn btn-primary">Call Address Emitter</button>
+            <ul className="list-group">
+              { this.state.addresses.length ? this.state.addresses.map( (address, index) => {
+                return (
+                  <li className="list-group-item" key={index}>
+                    {address}
+                  </li>
+                )
+              }) : null}
+            </ul>
           </div>
         </div>
         <div className="row">
